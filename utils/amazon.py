@@ -6,7 +6,33 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 
-def search_amazon(base_url, postcode, city_name, search_keyword):
+
+def pretty_print_amazon_results(products:list):
+    for index, product in enumerate(products, start=1):
+        try:
+            title = product.find_element(By.TAG_NAME, "h2").text.strip()
+        except:
+            title = "No Title"
+
+        try:
+            asin = product.get_attribute("data-asin")
+        except:
+            asin = "N/A"
+
+        # Check if it's sponsored
+        try:
+            sponsored = product.find_element(By.CSS_SELECTOR, ".puis-sponsored-label-text").text
+            is_sponsored = "Sponsored" in sponsored
+        except:
+            is_sponsored = False
+
+        label = "🟨 Sponsored" if is_sponsored else "🟩 Organic"
+        print(f"{index}. {label} - {title} (ASIN: {asin})")
+        
+        
+
+
+def search_amazon(base_url, postcode, city_name, search_keyword)-> list:
     # === Set up WebDriver ===
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get(base_url)
@@ -22,6 +48,7 @@ def search_amazon(base_url, postcode, city_name, search_keyword):
         postal_input = wait.until(EC.presence_of_element_located((By.ID, "GLUXPostalCodeWithCity_PostalCodeInput")))
         postal_input.clear()
         postal_input.send_keys(postcode)
+        print(f"✅ Postcode entered: {postcode}")
         time.sleep(1)
 
         # === Step 3: Open city dropdown ===
@@ -64,28 +91,10 @@ def search_amazon(base_url, postcode, city_name, search_keyword):
         print("\n📦 Search Results:\n")
         products = driver.find_elements(By.XPATH, "//div[@data-component-type='s-search-result']")
 
-        
-        for index, product in enumerate(products, start=1):
-            try:
-                title = product.find_element(By.TAG_NAME, "h2").text.strip()
-            except:
-                title = "No Title"
-
-            try:
-                asin = product.get_attribute("data-asin")
-            except:
-                asin = "N/A"
-
-            # Check if it's sponsored
-            try:
-                sponsored = product.find_element(By.CSS_SELECTOR, ".puis-sponsored-label-text").text
-                is_sponsored = "Sponsored" in sponsored
-            except:
-                is_sponsored = False
-
-            label = "🟨 Sponsored" if is_sponsored else "🟩 Organic"
-            print(f"{index}. {label} - {title} (ASIN: {asin})")
-
+        if not products:
+            print("❌ No products found.")
+            return []
+        pretty_print_amazon_results(products)
     except Exception as e:
         print("❌ Error during execution:", e)
 

@@ -71,5 +71,3 @@ except Exception as e:
 
 time.sleep(5)
 driver.quit()
-
-
