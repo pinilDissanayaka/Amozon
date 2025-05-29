@@ -1,4 +1,7 @@
-from utils import search_amazon
+from utils import search_amazon, search_ebay
 
 
-products=search_amazon(base_url="https://www.amazon.com.au", postcode="2143", city_name="REGENTS PARK", search_keyword="foam cutter")
+search_ebay("foam cutter", base_url="https://www.ebay.com.au", country="Australia - AUS", postcode="2143")
+
+
+

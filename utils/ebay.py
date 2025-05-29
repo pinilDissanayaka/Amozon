@@ -13,7 +13,7 @@ import os
 import csv
 import re
 
-def pretty_print_ebay_results(products: list) -> list:
+def pretty_print_ebay_results(products: list, page_num:int) -> list:
     try:
         # Collect and print product info for a given page
         data = []
@@ -49,13 +49,14 @@ def pretty_print_ebay_results(products: list) -> list:
                 label = "Sponsored"
             
             data.append({
+                "Page Number": f"P{page_num}",
                 "Index": index,
                 "Title": title,
                 "ASIN": asin,
                 "Type": label
             })
             
-            print(f"{index}. {label} - {title} (ASIN: {asin})")
+            print(f"P{page_num} {index}. {label} - {title} (ASIN: {asin})")
             index += 1
         return data
     except Exception as e:
@@ -64,15 +65,15 @@ def pretty_print_ebay_results(products: list) -> list:
     
 def save_to_csv(data: list, keyword: str):
     # Save product data to CSV
-    filename = f"ebay_product_search_results_for_{keyword}.csv"
+    filename = f"data/ebay_product_search_results_for_{keyword}.csv"
     with open(filename, mode="w+", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=["Index", "Title", "ASIN", "Type"])
+        writer = csv.DictWriter(file, fieldnames=["Page Number", "Index", "Title", "ASIN", "Type"])
         writer.writeheader()
         writer.writerows(data)
     print(f"\n✅ Data saved to {filename}")
 
 
-def search_ebay(keyword: str, base_url:str, country: str, postcode: str):
+def search_ebay(keyword: str, base_url: str, country: str, postcode: str, max_pages: int = 3):
     # Setup Chrome options
     options = Options()
     options.add_argument("--incognito")
@@ -93,24 +94,26 @@ def search_ebay(keyword: str, base_url:str, country: str, postcode: str):
         fix_hairline=True,
     )
 
+    all_data = []
+
     try:
-        # Step 1: Open eBay Australia
+        # Step 1: Open eBay
         driver.get(base_url)
         print(f"✅ Opened eBay {country}")
 
-        # Step 2: Enter keyword in search bar
+        # Step 2: Enter search keyword
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "gh-ac")))
         search_input = driver.find_element(By.ID, "gh-ac")
         search_input.clear()
         search_input.send_keys(keyword)
         search_input.send_keys(Keys.RETURN)
-        random_sleep()
         print(f"🔍 Searching for: {keyword}")
+        random_sleep()
 
-        # Step 3: Wait for search results
+        # Step 3: Wait for results
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "srp-river-results")))
 
-        # Step 4: Click location setting or fallback to edit
+                # Step 4: Click location setting or fallback to edit
         try:
             location_button = WebDriverWait(driver, 10).until(
                 EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 's-zipcode-entry__btn') and contains(., 'Sri Lanka')]"))
@@ -175,21 +178,36 @@ def search_ebay(keyword: str, base_url:str, country: str, postcode: str):
 
         # Wait to verify
         time.sleep(3)
-        
-        product_cards = WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By.XPATH, "//li[contains(@class, 's-item')]"))
-        )
 
-        if not product_cards:
-            print("❌ No products found on the page.")
-            return
-        else:
-            data = pretty_print_ebay_results(product_cards)
-            save_to_csv(data=data, keyword=keyword)
-        
+        current_page = 1
+        while current_page <= max_pages:
+            print(f"\n📦 Scraping page {current_page}...\n")
 
-        time.sleep(3)
-        
+            product_cards = WebDriverWait(driver, 10).until(
+                EC.presence_of_all_elements_located((By.XPATH, "//li[contains(@class, 's-item')]"))
+            )
+
+            if not product_cards:
+                print("❌ No products found on this page.")
+                break
+
+            page_data = pretty_print_ebay_results(product_cards, current_page)
+            all_data.extend(page_data)
+
+            try:
+                next_btn = driver.find_element(By.XPATH, "//a[contains(@class, 'pagination__next')]")
+                if "pagination__next--disabled" in next_btn.get_attribute("class"):
+                    print("✅ No more pages.")
+                    break
+                driver.execute_script("arguments[0].scrollIntoView(true);", next_btn)
+                time.sleep(1)
+                random_sleep()
+                next_btn.click()
+                current_page += 1
+                time.sleep(3)
+            except Exception as e:
+                print("✅ No next button found or error clicking next:", e)
+                break
 
     except Exception as e:
         print(f"❌ Unexpected Error: {e}")
@@ -200,3 +218,6 @@ def search_ebay(keyword: str, base_url:str, country: str, postcode: str):
     finally:
         driver.quit()
         print("🧹 Browser closed.")
+
+    if all_data:
+        save_to_csv(data=all_data, keyword=keyword)
