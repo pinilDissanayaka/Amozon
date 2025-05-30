@@ -73,7 +73,7 @@ def save_to_csv(data: list, keyword: str):
     print(f"\n✅ Data saved to {filename}")
 
 
-def search_ebay(keyword: str, base_url: str, country: str, postcode: str, max_pages: int = 3):
+def search_amazon(base_url, postcode, country, search_keyword, max_pages=3) -> list:
     # Setup Chrome options
     options = Options()
     options.add_argument("--incognito")
@@ -105,9 +105,9 @@ def search_ebay(keyword: str, base_url: str, country: str, postcode: str, max_pa
         WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "gh-ac")))
         search_input = driver.find_element(By.ID, "gh-ac")
         search_input.clear()
-        search_input.send_keys(keyword)
+        search_input.send_keys(search_keyword)
         search_input.send_keys(Keys.RETURN)
-        print(f"🔍 Searching for: {keyword}")
+        print(f"🔍 Searching for: {search_keyword}")
         random_sleep()
 
         # Step 3: Wait for results
@@ -220,4 +220,4 @@ def search_ebay(keyword: str, base_url: str, country: str, postcode: str, max_pa
         print("🧹 Browser closed.")
 
     if all_data:
-        save_to_csv(data=all_data, keyword=keyword)
+        save_to_csv(data=all_data, keyword=search_keyword)
