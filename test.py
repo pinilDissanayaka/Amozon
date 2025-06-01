@@ -1,202 +1,79 @@
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium_stealth import stealth
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import Select, WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from .config import random_sleep
 import time
+import random
 import os
-import csv
-import re
+import undetected_chromedriver as uc
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-def pretty_print_ebay_results(products: list) -> list:
-    try:
-        # Collect and print product info for a given page
-        data = []
-        index=1
-        for product in products:
-            try:
-                title = product.find_element(By.XPATH, ".//a[contains(@class, 's-item__link')]//div[contains(@class, 's-item__title')]/span[@role='heading']").get_attribute("innerText").strip()
-                
-                if title is None or title == "" or title == "Shop on eBay":
-                    continue
-            except Exception:
-                title = "No Title"
-            
-            try:
-                link_elem = product.find_element(By.XPATH, ".//a[contains(@class, 's-item__link')]")
-                product_url = link_elem.get_attribute("href")
-                
-                match = re.search(r'/itm/(\d+)', product_url)
-                asin = match.group(1) if match else "N/A"
-                
-            except Exception:
-                asin = "N/A"
-                
-            try:
-                sponsored = product.find_element(By.XPATH, ".//div[contains(@aria-hidden, 'true') and contains(text(), 'Sponsored')]").text
-                
-                if "Sponsored" in sponsored:
-                    label = "Sponsored"
-                else:
-                    label = "Organic"
-                
-            except Exception:
-                label = "Sponsored"
-            
-            data.append({
-                "Index": index,
-                "Title": title,
-                "ASIN": asin,
-                "Type": label
-            })
-            
-            print(f"{index}. {label} - {title} (ASIN: {asin})")
-            index += 1
-        return data
-    except Exception as e:
-        print(f"❌ Error in pretty_print_ebay_results: {e}")
-        return []
-    
-def save_to_csv(data: list, keyword: str):
-    # Save product data to CSV
-    filename = f"ebay_product_search_results_for_{keyword}.csv"
-    with open(filename, mode="w+", newline="", encoding="utf-8") as file:
-        writer = csv.DictWriter(file, fieldnames=["Index", "Title", "ASIN", "Type"])
-        writer.writeheader()
-        writer.writerows(data)
-    print(f"\n✅ Data saved to {filename}")
+def simulate_human_interaction(driver):
+    """Simulates human-like mouse movements and scrolling to reduce bot detection."""
+    action = ActionChains(driver)
+    for _ in range(random.randint(5, 10)):
+        x_offset = random.randint(100, 500)
+        y_offset = random.randint(100, 500)
+        try:
+            action.move_by_offset(x_offset, y_offset).perform()
+            time.sleep(random.uniform(0.5, 1.5))
+        except:
+            pass  # ignore if movement goes out of bounds
+    # Random scroll to mimic user behavior
+    scroll_height = driver.execute_script("return document.body.scrollHeight")
+    driver.execute_script(f"window.scrollTo(0, {random.randint(300, scroll_height)});")
+    time.sleep(random.uniform(1.5, 3.0))
 
-
-def search_ebay(keyword: str, base_url:str, country: str, postcode: str):
-    # Setup Chrome options
-    options = Options()
+def search_kagon(base_url) -> list:
+    options = uc.ChromeOptions()
     options.add_argument("--incognito")
     options.add_argument("--start-maximized")
-    options.add_experimental_option("excludeSwitches", ["enable-automation"])
-    options.add_experimental_option("useAutomationExtension", False)
+    options.add_argument("--disable-blink-features=AutomationControlled") 
 
-    # Initialize WebDriver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    options.add_argument(f"user-agent={user_agent}")
 
-    # Apply stealth
-    stealth(driver,
-        languages=["en-US", "en"],
-        vendor="Google Inc.",
-        platform="Win32",
-        webgl_vendor="Intel Inc.",
-        renderer="Intel Iris OpenGL Engine",
-        fix_hairline=True,
-    )
+    # Launch undetected Chrome
+    driver = uc.Chrome(options=options)
+    all_data = []
 
     try:
-        # Step 1: Open eBay Australia
         driver.get(base_url)
-        print(f"✅ Opened eBay {country}")
+        time.sleep(5)  # Wait for JS to load
 
-        # Step 2: Enter keyword in search bar
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "gh-ac")))
-        search_input = driver.find_element(By.ID, "gh-ac")
-        search_input.clear()
-        search_input.send_keys(keyword)
-        search_input.send_keys(Keys.RETURN)
-        random_sleep()
-        print(f"🔍 Searching for: {keyword}")
+        # Check for CAPTCHA
+        if "captcha" in driver.page_source.lower():
+            print("🛑 CAPTCHA detected!")
+            input("⚠️ Please solve the CAPTCHA manually, then press Enter to continue...")
 
-        # Step 3: Wait for search results
-        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "srp-river-results")))
+        simulate_human_interaction(driver)
 
-        # Step 4: Click location setting or fallback to edit
+        # Example scraping logic — you should customize this
+        wait = WebDriverWait(driver, 15)
+        # Example: Wait for some element (replace this with your actual target)
         try:
-            location_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 's-zipcode-entry__btn') and contains(., 'Sri Lanka')]"))
-            )
-            driver.execute_script("arguments[0].scrollIntoView(true);", location_button)
-            location_button.click()
-            print("✅ Clicked 'Postage to Sri Lanka'")
-            random_sleep()
+            title_element = wait.until(EC.presence_of_element_located((By.TAG_NAME, "title")))
+            print("✅ Page title:", title_element.get_attribute("textContent"))
+            all_data.append(title_element.get_attribute("textContent"))
         except:
-            print("❌ 'Postage to Sri Lanka' not found. Trying default location change...")
-            try:
-                location_edit_btn = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable((By.CLASS_NAME, "s-zipcode-entry__edit-btn"))
-                )
-                location_edit_btn.click()
-                print("📝 Clicked location edit button")
-                random_sleep()
-            except Exception as le:
-                print(f"❌ Failed to open location settings: {le}")
-                return
+            print("⚠️ Could not find the title element.")
 
-        # Step 5: Select country from dropdown
-        dropdown = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//select[contains(@id, '-select')]"))
-        )
-        select = Select(dropdown)
-        select.select_by_visible_text(country)
-        print(f"✅ Selected country: {country}")
-        random_sleep()
-        
-
-        # Step 6: Set postcode
-        postcode_input = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, "//input[@aria-label='Postcode']"))
-        )
-        driver.execute_script("arguments[0].removeAttribute('disabled')", postcode_input)
-        postcode_input.clear()
-        postcode_input.send_keys(postcode)
-        print(f"📮 Postcode set to: {postcode}")
-        random_sleep()
-
-
-        # Step 7: Apply settings with retry
-        success = False
-        for attempt in range(2):
-            try:
-                apply_btn = WebDriverWait(driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, "//button[text()='Apply']"))
-                )
-                apply_btn.click()
-                print("🎉 Location settings applied!")
-                random_sleep()
-                success = True
-                break
-            except Exception as ap:
-                print(f"⚠️ Attempt {attempt+1} to click Apply failed: {ap}")
-                random_sleep()
-
-
-        if not success:
-            print("❌ Failed to apply location settings after multiple attempts.")
-
-        # Wait to verify
-        time.sleep(3)
-        
-        product_cards = WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By.XPATH, "//li[contains(@class, 's-item')]"))
-        )
-
-        if not product_cards:
-            print("❌ No products found on the page.")
-            return
-        else:
-            data = pretty_print_ebay_results(product_cards)
-            save_to_csv(data=data, keyword=keyword)
-        
-
-        time.sleep(3)
-        
+        # Add your own scraping logic here...
 
     except Exception as e:
-        print(f"❌ Unexpected Error: {e}")
-        screenshot_path = os.path.abspath("ebay_error_screenshot.png")
+        print(f"❌ Error: {e}")
+        os.makedirs("error", exist_ok=True)
+        screenshot_path = os.path.abspath("error/kagon_error_screenshot.png")
         driver.save_screenshot(screenshot_path)
         print(f"📸 Screenshot saved to: {screenshot_path}")
 
     finally:
         driver.quit()
         print("🧹 Browser closed.")
+
+    return all_data
+
+# Example usage
+if __name__ == "__main__":
+    url = "https://www.kogan.com/au/"  # Replace with your target URL
+    data = search_kagon(url)
+    print("🔍 Scraped Data:", data)

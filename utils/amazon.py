@@ -79,8 +79,9 @@ def search_amazon(base_url, postcode, city_name, search_keyword, max_pages=3) ->
     all_data = []
 
     try:
-        print("❌ CAPTCHA triggered.")
-        input("🧠 CAPTCHA may be shown. Please solve it in the browser if present, then press Enter to continue...")
+        if "captcha" in driver.page_source.lower():
+            print("❌ CAPTCHA triggered.")
+            input("🧠 CAPTCHA may be shown. Please solve it in the browser if present, then press Enter to continue...")
 
         # Set location
         location_btn = wait.until(EC.element_to_be_clickable((By.ID, "nav-global-location-popover-link")))

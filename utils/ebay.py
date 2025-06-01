@@ -73,7 +73,7 @@ def save_to_csv(data: list, keyword: str):
     print(f"\n✅ Data saved to {filename}")
 
 
-def search_amazon(base_url, postcode, country, search_keyword, max_pages=3) -> list:
+def search_ebay(base_url, postcode, country, search_keyword, max_pages=3) -> list:
     # Setup Chrome options
     options = Options()
     options.add_argument("--incognito")
@@ -211,7 +211,7 @@ def search_amazon(base_url, postcode, country, search_keyword, max_pages=3) -> l
 
     except Exception as e:
         print(f"❌ Unexpected Error: {e}")
-        screenshot_path = os.path.abspath("ebay_error_screenshot.png")
+        screenshot_path = os.path.abspath("error/ebay_error_screenshot.png")
         driver.save_screenshot(screenshot_path)
         print(f"📸 Screenshot saved to: {screenshot_path}")
 
