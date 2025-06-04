@@ -79,8 +79,7 @@ def search_kagon(base_url) -> list:
     options.add_argument("--incognito")
     options.add_argument("--start-maximized")
     
-    # Don't include these lines if you want a fully native browser profile
-    # These options are mostly used to hide automation; not ad-blocking
+
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
 

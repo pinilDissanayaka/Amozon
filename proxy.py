@@ -1,27 +1,41 @@
-import http.server
-import socketserver
-import urllib.request
-import urllib.parse
-import sys
+import os
+import threading
+import queue
+import requests
 
-PORT = 8888
 
-class ProxyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
-    def do_GET(self):
+
+q = queue.Queue()   
+
+valid_proxies = []  
+
+
+with open('proxy.txt', 'r') as file:
+    proxies = file.read().split("\n")
+    
+    for p in proxies:
+            q.put(p)
+            
+            
+def check_proxy():
+    global q
+    
+    while not q.empty():
+        proxy = q.get()
         try:
-            url = self.path
-            if not url.startswith('http'):
-                url = 'http://' + self.headers['Host'] + self.path
-
-            self.send_response(200)
-            self.end_headers()
-
-            req = urllib.request.Request(url)
-            with urllib.request.urlopen(req) as response:
-                self.wfile.write(response.read())
-        except Exception as e:
-            self.send_error(500, f"Error fetching URL: {e}")
-
-with socketserver.TCPServer(("", PORT), ProxyHTTPRequestHandler) as httpd:
-    print(f"🚀 Serving proxy on port {PORT}")
-    httpd.serve_forever()
+            res=requests.get(
+                "https://ipinfo.io/json",
+                proxies={"http": proxy, "https": proxy},
+            )
+        except:
+            continue
+        
+        if res.status_code == 200:
+            print(f"Valid proxy found: {proxy}")
+            with open('valid_proxies.txt', 'a') as valid_file:
+                valid_file.write(proxy + "\n")
+            
+            
+for _ in range(10):  # Adjust the number of threads as needed
+    t = threading.Thread(target=check_proxy)
+    t.start()
