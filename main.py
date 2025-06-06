@@ -14,6 +14,8 @@ output_file = "output.csv"
 for row_index, row in df.iterrows():
     print(f"\nSearching Keyword: {row['Keyword']}")
 
+    data = None
+
     try:
         data = search_ebay(
             base_url="https://www.ebay.com.au",
@@ -47,10 +49,10 @@ for row_index, row in df.iterrows():
     if row_index % 10 == 0:
         df.to_csv("backup_results.csv", index=False)
 
-    time.sleep(random.uniform(1, 4))
+    time.sleep(random.uniform(3, 6))
     
-    if row_index == 0:
-        print("Reached the limit of 4 iterations, stopping further processing.")
+    if row_index == 13:
+        print("Reached the limit of 13 iterations, stopping further processing.")
         break
 
 

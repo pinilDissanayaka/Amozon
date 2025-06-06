@@ -31,6 +31,8 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                     continue
             except Exception:
                 title = "No Title"
+                
+            print(f"🔹 Product {index}: {title}")
             
             try:
                 link_elem = product.find_element(By.XPATH, ".//a[contains(@class, 's-item__link')]")
@@ -57,10 +59,10 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                 print(f"🔍 Found product with ID {product_id} at index {index} on page {page_num}.")
                 print(f"It ranks {index} / {number_of_products} on this page.")
                 
-                if index <20 and label == "Sponsored":
-                    is_top_20_advertised = "Yes"
+                if index <24 and label == "Sponsored":
+                    is_top_24_advertised = "Yes"
                 else:
-                    is_top_20_advertised = "No"
+                    is_top_24_advertised = "No"
                 
                 if label == "Sponsored":
                     data.append({
@@ -70,7 +72,7 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                         "Product ID": asin,
                         "Sponsored Rank": f"P{page_num} - {index} / {number_of_products}",
                         "Organic Rank": "N/A",
-                        "Is Top 20 Advertised": is_top_20_advertised
+                        "Is Top 24 Advertised": is_top_24_advertised
                     })
                 else:
                     data.append({
@@ -80,7 +82,7 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                         "Product ID": asin,
                         "Sponsored Rank": "N/A",
                         "Organic Rank": f"P{page_num} - {index} / {number_of_products}",
-                        "Is Top 20 Advertised": is_top_20_advertised
+                        "Is Top 24 Advertised": is_top_24_advertised
                     })
             index += 1
 
@@ -102,6 +104,9 @@ def search_ebay(base_url, postcode, country, search_keyword, product_id, product
         if proxy:
             options.add_argument(f"--proxy-server={proxy}")
 
+
+        driver=None
+        
         try:
             driver = uc.Chrome(options=options)
             
@@ -252,7 +257,11 @@ def search_ebay(base_url, postcode, country, search_keyword, product_id, product
             
         
         return all_data
+    except Exception as e:
+        print(f"❌ Error in search_ebay: {e}")
+        if driver:
+            screenshot_path = os.path.abspath("error/ebay_error_screenshot.png")
+            driver.save_screenshot(screenshot_path)
+            print(f"📸 Screenshot saved to: {screenshot_path}")
+        return []
             
-    finally:
-        driver.quit()
-        print("✅ Browser closed.")
