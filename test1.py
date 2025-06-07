@@ -14,7 +14,7 @@ import re
 import time
 import random
 
-def find_ranking(products: list, page_num:int, product_id:str, product_url:str, keyword:str = None):
+def find_ranking(products: list, page_num:int, product_id:str, product_url:str, keyword:str, sku:str):
     try:
         # Collect and print product info for a given page
         number_of_products = len(products)
@@ -66,7 +66,8 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                     data.append({
                         "Product URL": product_url,
                         "Product Title": title,
-                        "Keyword": keyword, 
+                        "Keyword": keyword,
+                        "sku" : sku,
                         "Product ID": asin,
                         "Sponsored Rank": f"P{page_num} - {index} / {number_of_products}",
                         "Organic Rank": "N/A",
@@ -77,6 +78,7 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                         "Product URL": product_url,
                         "Product Title": title,
                         "Keyword": keyword, 
+                        "sku" : sku,
                         "Product ID": asin,
                         "Sponsored Rank": "N/A",
                         "Organic Rank": f"P{page_num} - {index} / {number_of_products}",
@@ -210,7 +212,7 @@ def setup_location(driver, postcode:str, country:str):
         
 
 
-def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, max_pages:int=3):
+def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, sku:str, max_pages:int=3):
     
     all_data=[]
 
@@ -226,7 +228,7 @@ def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, max_
             print("❌ No products found on this page.")
             break
 
-        data = find_ranking(products=product_cards, page_num=current_page, product_id=product_id, product_url=product_url, keyword=search_keyword)
+        data = find_ranking(products=product_cards, page_num=current_page, product_id=product_id, product_url=product_url, keyword=search_keyword, sku=sku)
 
         if data is not None:
             print(data)
@@ -236,6 +238,7 @@ def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, max_
                 "Product URL": product_url,
                 "Product Title": "N/A",
                 "Keyword": search_keyword, 
+                "sku" : sku,
                 "Product ID": product_id,
                 "Sponsored Rank": "N/A",
                 "Organic Rank": "N/A",

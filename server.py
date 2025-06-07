@@ -5,8 +5,13 @@ import time
 import random
 import os 
 
+def get_ebay_item_id(url):
+    item_id = url.rstrip('/').split('/')[-1]
+    return item_id
 
-def ebay_search(postcode: str, country: str, search_keyword: str, product_id: str, product_url: str, run_count: int, driver, max_pages: int = 3):
+
+
+def ebay_search(postcode: str, country: str, search_keyword: str, product_id: str, product_url: str, run_count: int, driver, sku:str, max_pages: int = 3):
     time.sleep(random.uniform(3, 6))
 
     if run_count == 0:        
@@ -21,6 +26,7 @@ def ebay_search(postcode: str, country: str, search_keyword: str, product_id: st
                 search_keyword=search_keyword,
                 product_id=product_id,
                 product_url=product_url,
+                sku=sku,
                 max_pages=max_pages
             )
             
@@ -64,8 +70,8 @@ def ebay_search_one(postcode: str, country: str, search_keyword: str, product_id
     return None 
 
 def main():
-    df = pd.read_csv("results.csv")
-    output_file = "output_2.csv"
+    df = pd.read_csv("PriorityAds.csv")
+    output_file = "output.csv"
     base_url="https://www.ebay.com.au"
     
     
@@ -77,13 +83,15 @@ def main():
         print(f"\nSearching Keyword: {row['Keyword']}")
 
         data = None
-
+        
+        product_id = get_ebay_item_id(str(row['Link of the Product']))
+        
         try:
             data = ebay_search(
                 postcode="2143",
                 country="Australia - AUS",
-                search_keyword=str(row['Keyword']),
-                product_id=str(row['Product ID']),
+                search_keyword=str(row['Keywords']),
+                product_id=product_id,
                 product_url=str(row['Link of the Product']),
                 run_count=row_index,
                 driver=driver,
@@ -108,7 +116,8 @@ def main():
                     "Product URL": str(row['Link of the Product']),
                     "Product Title": "N/A",
                     "Keyword": str(row['Keyword']), 
-                    "Product ID": str(row['Product ID']),
+                    "Product ID": product_id,
+                    "SKU": str(row['SKU']),
                     "Sponsored Rank": "N/A",
                     "Organic Rank": "N/A",
                     "Is Top 24 Advertised": "N/A"
