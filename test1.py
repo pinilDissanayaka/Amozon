@@ -56,31 +56,31 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
             if product_id == str(asin):
                 print(f"🔍 Found product with ID {product_id} at index {index} on page {page_num}.")
                 print(f"It ranks {index} / {number_of_products} on this page.")
-                
-                if index <24 and label == "Sponsored":
+
+                if index <24 and label != "Organic":
                     is_top_24_advertised = "Yes"
                 else:
                     is_top_24_advertised = "No"
                 
                 if label == "Sponsored" or label == "Sponsored-Pickup From ebay":
                     data.append({
-                        "Product URL": product_url,
-                        "Product Title": title,
-                        "Keyword": keyword,
-                        "sku" : sku,
-                        "Product ID": asin,
+                        "Product URL": str(product_url),
+                        "Product Title": str(title),
+                        "Keyword": str(keyword),
+                        "sku": str(sku),
+                        "Product ID": str(asin),
                         "Sponsored Rank": f"P{page_num} - {index} / {number_of_products}",
-                        "Organic Rank": "N/A",
+                        "Organic Rank": "No",
                         "Is Top 24 Advertised": is_top_24_advertised
                     })
                 else:
                     data.append({
-                        "Product URL": product_url,
-                        "Product Title": title,
-                        "Keyword": keyword, 
-                        "sku" : sku,
-                        "Product ID": asin,
-                        "Sponsored Rank": "N/A",
+                        "Product URL": str(product_url),
+                        "Product Title": str(title),
+                        "Keyword": str(keyword),
+                        "sku": str(sku),
+                        "Product ID": str(asin),
+                        "Sponsored Rank": "No",
                         "Organic Rank": f"P{page_num} - {index} / {number_of_products}",
                         "Is Top 24 Advertised": is_top_24_advertised
                     })
@@ -236,13 +236,13 @@ def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, sku:
         else:
             all_data.append({
                 "Product URL": product_url,
-                "Product Title": "N/A",
-                "Keyword": search_keyword, 
-                "sku" : sku,
-                "Product ID": product_id,
-                "Sponsored Rank": "N/A",
-                "Organic Rank": "N/A",
-                "Is Top 24 Advertised": "N/A"
+                "Product Title": "No",
+                "Keyword": str(search_keyword), 
+                "sku": str(sku),
+                "Product ID": str(product_id),
+                "Sponsored Rank": "No",
+                "Organic Rank": "No",
+                "Is Top 24 Advertised": "No"
             })
 
 

@@ -39,6 +39,7 @@ def ebay_search(postcode: str, country: str, search_keyword: str, product_id: st
             search_keyword=search_keyword,
             product_id=product_id,
             product_url=product_url,
+            sku=sku,
             max_pages=max_pages
         )
         
@@ -80,7 +81,7 @@ def main():
 
     for row_index, row in df.iterrows():
         print(f"\nProcessing Row: {row_index + 1} of {len(df)}")
-        print(f"\nSearching Keyword: {row['Keyword']}")
+        print(f"\nSearching Keyword: {row['Keywords']}")
 
         data = None
         
@@ -92,6 +93,7 @@ def main():
                 country="Australia - AUS",
                 search_keyword=str(row['Keywords']),
                 product_id=product_id,
+                sku=str(row['SKU']),
                 product_url=str(row['Link of the Product']),
                 run_count=row_index,
                 driver=driver,
@@ -114,13 +116,13 @@ def main():
             else:
                 default_row = {
                     "Product URL": str(row['Link of the Product']),
-                    "Product Title": "N/A",
-                    "Keyword": str(row['Keyword']), 
+                    "Product Title": "No",
+                    "Keyword": str(row['Keywords']), 
                     "Product ID": product_id,
-                    "SKU": str(row['SKU']),
-                    "Sponsored Rank": "N/A",
-                    "Organic Rank": "N/A",
-                    "Is Top 24 Advertised": "N/A"
+                    "sku": str(row['SKU']),
+                    "Sponsored Rank": "No",
+                    "Organic Rank": "No",
+                    "Is Top 24 Advertised": "No"
                 }
                 
                 with open(output_file, mode='a', newline='', encoding='utf-8') as file:
@@ -144,8 +146,6 @@ def main():
 
         time.sleep(random.uniform(3, 6))
         
-        if row_index==4:
-            break
         
     return driver
 
