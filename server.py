@@ -118,8 +118,8 @@ def main():
                     "Product URL": str(row['Link of the Product']),
                     "Product Title": "No",
                     "Keyword": str(row['Keywords']), 
-                    "Product ID": product_id,
                     "sku": str(row['SKU']),
+                    "Product ID": product_id,
                     "Sponsored Rank": "No",
                     "Organic Rank": "No",
                     "Is Top 24 Advertised": "No"
