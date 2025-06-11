@@ -215,6 +215,8 @@ def setup_location(driver, postcode:str, country:str):
 def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, sku:str, max_pages:int=3):
     
     all_data=[]
+    # Dictionary to track if we've already found the product
+    found_products = {}
 
     current_page = 1
     while current_page <= max_pages:
@@ -232,7 +234,32 @@ def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, sku:
 
         if data is not None:
             print(data)
-            all_data.extend(data)
+            # Process each item before adding to all_data
+            for item in data:
+                item_id = item["Product ID"]
+                # Check if we've already found this product
+                if item_id in found_products:
+                    # Get the index of the existing item
+                    index = found_products[item_id]
+                    existing_item = all_data[index]
+                    
+                    # Merge the information
+                    if item["Sponsored Rank"] != "No" and existing_item["Sponsored Rank"] == "No":
+                        existing_item["Sponsored Rank"] = item["Sponsored Rank"]
+                    
+                    if item["Organic Rank"] != "No" and existing_item["Organic Rank"] == "No":
+                        existing_item["Organic Rank"] = item["Organic Rank"]
+                    
+                    # Update top 24 advertised status if needed
+                    if item["Is Top 24 Advertised"] == "Yes":
+                        existing_item["Is Top 24 Advertised"] = "Yes"
+                    
+                    print(f"🔄 Updated existing entry for product ID {item_id}")
+                else:
+                    # Add new item and track its index
+                    all_data.append(item)
+                    found_products[item_id] = len(all_data) - 1
+                    print(f"➕ Added new entry for product ID {item_id}")
         else:
             all_data.append({
                 "Product URL": product_url,

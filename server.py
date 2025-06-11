@@ -17,6 +17,7 @@ def ebay_search(postcode: str, country: str, search_keyword: str, product_id: st
     if run_count == 0:        
         if driver:
             search_ebay(driver, search_keyword=search_keyword)
+            time.sleep(random.uniform(3, 6))
             setup_location(driver, postcode=postcode, country=country)
             
             time.sleep(random.uniform(3, 6))
@@ -34,6 +35,7 @@ def ebay_search(postcode: str, country: str, search_keyword: str, product_id: st
                 return data
     else:
         search_ebay(driver, search_keyword=search_keyword)
+        time.sleep(random.uniform(3, 6))
         data = scrape_web(
             driver=driver,
             search_keyword=search_keyword,
@@ -71,8 +73,8 @@ def ebay_search_one(postcode: str, country: str, search_keyword: str, product_id
     return None 
 
 def main():
-    df = pd.read_csv("PriorityAds.csv")
-    output_file = "output.csv"
+    df = pd.read_csv("todo.csv")
+    output_file = "output_1.csv"
     base_url="https://www.ebay.com.au"
     
     
@@ -102,17 +104,40 @@ def main():
             
             
             if data:
+                # Consolidate data for the same product
+                consolidated_data = {}
+                for item in data:
+                    # Use product ID as the key to identify unique products
+                    key = item["Product ID"]
+                    
+                    if key not in consolidated_data:
+                        consolidated_data[key] = item
+                    else:
+                        # Combine sponsored and organic rankings if both exist
+                        if item["Sponsored Rank"] != "No" and consolidated_data[key]["Sponsored Rank"] == "No":
+                            consolidated_data[key]["Sponsored Rank"] = item["Sponsored Rank"]
+                        
+                        if item["Organic Rank"] != "No" and consolidated_data[key]["Organic Rank"] == "No":
+                            consolidated_data[key]["Organic Rank"] = item["Organic Rank"]
+                        
+                        # Update top 24 advertised status if needed
+                        if item["Is Top 24 Advertised"] == "Yes":
+                            consolidated_data[key]["Is Top 24 Advertised"] = "Yes"
+                
+                # Convert the dictionary to a list
+                final_data = list(consolidated_data.values())
+                
                 with open(output_file, mode='a', newline='', encoding='utf-8') as file:
                     writer = csv.DictWriter(
                         file,
-                        fieldnames=data[0].keys(),
+                        fieldnames=final_data[0].keys(),
                         quoting=csv.QUOTE_ALL
                     )
 
                     if not os.path.exists(output_file) or os.path.getsize(output_file) == 0:
                         writer.writeheader()
 
-                    writer.writerows(data)
+                    writer.writerows(final_data)
             else:
                 default_row = {
                     "Product URL": str(row['Link of the Product']),
