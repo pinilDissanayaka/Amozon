@@ -11,7 +11,7 @@ def get_ebay_item_id(url):
 
 
 
-def ebay_search(postcode: str, country: str, search_keyword: str, product_id: str, product_url: str, run_count: int, driver, sku:str, max_pages: int = 3):
+def ebay_search(postcode: str, country: str, search_keyword: str, product_id: str, product_url: str, run_count: int, driver, sku:str, reference_id:str, max_pages: int = 3):
     time.sleep(random.uniform(3, 6))
 
     if run_count == 0:        
@@ -28,6 +28,7 @@ def ebay_search(postcode: str, country: str, search_keyword: str, product_id: st
                 product_id=product_id,
                 product_url=product_url,
                 sku=sku,
+                reference_id=reference_id,
                 max_pages=max_pages
             )
             
@@ -42,6 +43,7 @@ def ebay_search(postcode: str, country: str, search_keyword: str, product_id: st
             product_id=product_id,
             product_url=product_url,
             sku=sku,
+            reference_id=reference_id,
             max_pages=max_pages
         )
         
@@ -99,6 +101,7 @@ def main():
                 product_url=str(row['Link of the Product']),
                 run_count=row_index,
                 driver=driver,
+                reference_id=str(row['Reference ID']),
                 max_pages=3
             )
             
@@ -140,6 +143,7 @@ def main():
                     writer.writerows(final_data)
             else:
                 default_row = {
+                    "Reference ID": str(row['Reference ID']),
                     "Product URL": str(row['Link of the Product']),
                     "Product Title": "No",
                     "Keyword": str(row['Keywords']), 

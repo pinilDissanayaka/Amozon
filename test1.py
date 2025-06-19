@@ -14,7 +14,7 @@ import re
 import time
 import random
 
-def find_ranking(products: list, page_num:int, product_id:str, product_url:str, keyword:str, sku:str):
+def find_ranking(products: list, page_num:int, product_id:str, product_url:str, keyword:str, sku:str, reference_id:str):
     try:
         # Collect and print product info for a given page
         number_of_products = len(products)
@@ -64,6 +64,7 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                 
                 if label == "Sponsored" or label == "Sponsored-Pickup From ebay":
                     data.append({
+                        "Reference ID": reference_id,
                         "Product URL": str(product_url),
                         "Product Title": str(title),
                         "Keyword": str(keyword),
@@ -75,6 +76,7 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                     })
                 else:
                     data.append({
+                        "Reference ID": reference_id,
                         "Product URL": str(product_url),
                         "Product Title": str(title),
                         "Keyword": str(keyword),
@@ -212,7 +214,7 @@ def setup_location(driver, postcode:str, country:str):
         
 
 
-def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, sku:str, max_pages:int=3):
+def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, sku:str, reference_id:str, max_pages:int=3):
     
     all_data=[]
     # Dictionary to track if we've already found the product
@@ -230,7 +232,7 @@ def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, sku:
             print("❌ No products found on this page.")
             break
 
-        data = find_ranking(products=product_cards, page_num=current_page, product_id=product_id, product_url=product_url, keyword=search_keyword, sku=sku)
+        data = find_ranking(products=product_cards, page_num=current_page, product_id=product_id, product_url=product_url, keyword=search_keyword, sku=sku, reference_id=reference_id)
 
         if data is not None:
             print(data)
@@ -262,6 +264,7 @@ def scrape_web(driver, product_id:str, product_url:str, search_keyword:str, sku:
                     print(f"➕ Added new entry for product ID {item_id}")
         else:
             all_data.append({
+                "Reference ID": reference_id,
                 "Product URL": product_url,
                 "Product Title": "No",
                 "Keyword": str(search_keyword), 
