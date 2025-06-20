@@ -102,7 +102,7 @@ def main():
                 run_count=row_index,
                 driver=driver,
                 reference_id=str(row['Reference ID']),
-                max_pages=3
+                max_pages=2
             )
             
             
