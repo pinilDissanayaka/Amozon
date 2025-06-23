@@ -75,7 +75,7 @@ def ebay_search_one(postcode: str, country: str, search_keyword: str, product_id
     return None 
 
 def main():
-    df = pd.read_csv("ebay.csv")
+    df = pd.read_csv("output_converted.csv")
     output_file = "output.csv"
     base_url="https://www.ebay.com.au"
     
@@ -91,6 +91,10 @@ def main():
         
         product_id = get_ebay_item_id(str(row['Link of the Product']))
         
+        if str(row['Is Top 24 Advertised']) == "Yes":
+            print("Skipping Top 24 Advertised Product")
+            continue
+        
         try:
             data = ebay_search(
                 postcode="2143",
@@ -101,7 +105,7 @@ def main():
                 product_url=str(row['Link of the Product']),
                 run_count=row_index,
                 driver=driver,
-                reference_id=str(row['Reference ID']),
+                reference_id=str(row['ReferenceID']),
                 max_pages=2
             )
             
@@ -153,6 +157,8 @@ def main():
                     "Organic Rank": "No",
                     "Is Top 24 Advertised": "No"
                 }
+                
+                
                 
                 with open(output_file, mode='a', newline='', encoding='utf-8') as file:
                     writer = csv.DictWriter(
