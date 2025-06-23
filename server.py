@@ -11,7 +11,7 @@ def get_ebay_item_id(url):
 
 
 
-def ebay_search(postcode: str, country: str, search_keyword: str, product_id: str, product_url: str, run_count: int, driver, sku:str, reference_id:str, max_pages: int = 3):
+def ebay_search(postcode: str, country: str, search_keyword: str, product_id: str, product_url: str, run_count: int, driver, sku:str, reference_id:str, is_24:str=None, max_pages: int = 3):
     time.sleep(random.uniform(3, 6))
 
     if run_count == 0:        
@@ -22,6 +22,10 @@ def ebay_search(postcode: str, country: str, search_keyword: str, product_id: st
             
             time.sleep(random.uniform(3, 6))
 
+            if is_24 == "Yes":
+                print("Skipping search for Top 24 Advertised products")
+                return None
+                
             data=scrape_web(
                 driver=driver,
                 search_keyword=search_keyword,
@@ -35,6 +39,9 @@ def ebay_search(postcode: str, country: str, search_keyword: str, product_id: st
             if data:
                 return data
     else:
+        if is_24 == "Yes":
+            print("Skipping search for Top 24 Advertised products")
+            return None
         search_ebay(driver, search_keyword=search_keyword)
         time.sleep(random.uniform(3, 6))
         data = scrape_web(
@@ -91,9 +98,6 @@ def main():
         
         product_id = get_ebay_item_id(str(row['Link of the Product']))
         
-        if str(row['Is Top 24 Advertised']) == "Yes":
-            print("Skipping Top 24 Advertised Product")
-            continue
         
         try:
             data = ebay_search(
@@ -106,6 +110,7 @@ def main():
                 run_count=row_index,
                 driver=driver,
                 reference_id=str(row['ReferenceID']),
+                is_24=str(row['Is Top 24 Advertised']),
                 max_pages=2
             )
             
