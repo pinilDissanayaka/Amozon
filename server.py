@@ -1,3 +1,6 @@
+from turtle import st
+
+from regex import R
 from test1 import open_browser, search_ebay, close_browser, setup_location, scrape_web
 import pandas as pd
 import csv
@@ -82,8 +85,8 @@ def ebay_search_one(postcode: str, country: str, search_keyword: str, product_id
     return None 
 
 def main():
-    df = pd.read_csv("ebay.csv")
-    output_file = "output.csv"
+    df = pd.read_csv("filtered_output.csv")
+    output_file = "output_1.csv"
     base_url="https://www.ebay.com.au"
     
     
@@ -96,7 +99,7 @@ def main():
 
         data = None
         
-        product_id = get_ebay_item_id(str(row['Link of the Product']))
+        product_id = get_ebay_item_id(str(row['Product URL']))
         
         
         try:
@@ -106,10 +109,11 @@ def main():
                 search_keyword=str(row['Keywords']),
                 product_id=product_id,
                 sku=str(row['SKU']),
-                product_url=str(row['Link of the Product']),
+                product_url=str(row['Product URL']),
                 run_count=row_index,
                 driver=driver,
                 reference_id=str(row['ReferenceID']),
+                is_24=str(row['Is Top 24 Advertised']),                 
                 max_pages=2
             )
             
@@ -152,7 +156,7 @@ def main():
             else:
                 default_row = {
                     "Reference ID": str(row['ReferenceID']),
-                    "Product URL": str(row['Link of the Product']),
+                    "Product URL": str(row['Product URL']),
                     "Product Title": "No",
                     "Keyword": str(row['Keywords']), 
                     "sku": str(row['SKU']),

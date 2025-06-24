@@ -1,6 +1,6 @@
 import csv
 
-def format_reference_ids(input_file='output.csv', output_file='output_formatted.csv'):
+def format_reference_ids(input_file='output.csv', output_file='output_formatted_1.csv'):
     """
     Reads a CSV file and converts the 'Reference ID' column to a four-digit format.
     
