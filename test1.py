@@ -1,3 +1,4 @@
+from posthog import page
 from selenium import webdriver
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
@@ -60,7 +61,7 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                 print(f"🔍 Found product with ID {product_id} at index {index} on page {page_num}.")
                 print(f"It ranks {index} / {number_of_products} on this page.")
 
-                if index <24 and label != "Organic":
+                if index <=24 and label != "Organic" and page_num == 1:
                     is_top_24_advertised = "Yes"
                 else:
                     is_top_24_advertised = "No"

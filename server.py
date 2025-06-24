@@ -85,7 +85,7 @@ def ebay_search_one(postcode: str, country: str, search_keyword: str, product_id
     return None 
 
 def main():
-    df = pd.read_csv("filtered_output.csv")
+    df = pd.read_csv("output_1_formatted.csv")
     output_file = "output_1.csv"
     base_url="https://www.ebay.com.au"
     
