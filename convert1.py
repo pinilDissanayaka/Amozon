@@ -1,6 +1,6 @@
 import csv
 
-def format_reference_ids(input_file='output.csv', output_file='output_formatted_1.csv'):
+def format_reference_ids(input_file='output_1_formatted.csv', output_file='output_formatted_2.csv'):
     """
     Reads a CSV file and converts the 'Reference ID' column to a four-digit format.
     
@@ -22,10 +22,10 @@ def format_reference_ids(input_file='output.csv', output_file='output_formatted_
             # Process each row
             for row in reader:
                 # Convert the Reference ID to a four-digit format
-                if row['Reference ID'] and row['Reference ID'] != 'No':
+                if row['ReferenceID'] and row['ReferenceID'] != 'No':
                     try:
-                        ref_id = int(row['Reference ID'])
-                        row['Reference ID'] = f'{ref_id:04d}'
+                        ref_id = int(row['ReferenceID'])
+                        row['ReferenceID'] = f'{ref_id:04d}'
                     except ValueError:
                         # Keep original value if conversion fails
                         pass
