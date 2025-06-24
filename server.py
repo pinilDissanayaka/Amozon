@@ -159,6 +159,7 @@ def main():
                     "Product ID": product_id,
                     "Sponsored Rank": "No",
                     "Organic Rank": "No",
+                    "Is Top 24 Advertised": "No"
                 }
                 
                 
