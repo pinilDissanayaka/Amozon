@@ -43,15 +43,18 @@ def find_ranking(products: list, page_num:int, product_id:str, product_url:str, 
                 asin = "N/A"
                 
             try:
-                sponsored = product.find_element(By.XPATH, ".//div[contains(@aria-hidden, 'true') and contains(text(), 'Sponsored')]").text
-                
-                if "Sponsored" in sponsored:
-                    label = "Sponsored"
-                else:
-                    label = "Organic"
-                
+                # Find the specific span with aria-hidden and exact text 'derosnopS'
+                sponsored_span = product.find_element(
+                    By.XPATH,
+                    ".//span[@aria-hidden='true' and normalize-space(text())='derosnopS']"
+                )
+
+                label = "Sponsored"
+
             except Exception:
-                label = "Sponsored-Pickup From ebay"
+                label = "Organic"
+
+
                 
             if product_id == str(asin):
                 print(f"🔍 Found product with ID {product_id} at index {index} on page {page_num}.")

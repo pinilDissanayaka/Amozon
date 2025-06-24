@@ -82,7 +82,7 @@ def ebay_search_one(postcode: str, country: str, search_keyword: str, product_id
     return None 
 
 def main():
-    df = pd.read_csv("output_converted.csv")
+    df = pd.read_csv("ebay.csv")
     output_file = "output.csv"
     base_url="https://www.ebay.com.au"
     
@@ -110,7 +110,6 @@ def main():
                 run_count=row_index,
                 driver=driver,
                 reference_id=str(row['ReferenceID']),
-                is_24=str(row['Is Top 24 Advertised']),
                 max_pages=2
             )
             
@@ -152,7 +151,7 @@ def main():
                     writer.writerows(final_data)
             else:
                 default_row = {
-                    "Reference ID": str(row['Reference ID']),
+                    "Reference ID": str(row['ReferenceID']),
                     "Product URL": str(row['Link of the Product']),
                     "Product Title": "No",
                     "Keyword": str(row['Keywords']), 
@@ -160,7 +159,6 @@ def main():
                     "Product ID": product_id,
                     "Sponsored Rank": "No",
                     "Organic Rank": "No",
-                    "Is Top 24 Advertised": "No"
                 }
                 
                 

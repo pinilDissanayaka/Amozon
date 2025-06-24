@@ -12,6 +12,11 @@ with open(input_file, mode='r', newline='', encoding='utf-8') as infile, \
     
     writer.writeheader()
     for row in reader:
-        # Convert "Reference ID" to a four-digit number
-        row["Reference ID"] = f'{int(row["Reference ID"]):04}'
-        writer.writerow(row)
+        # Drop rows where "Product Title" is "No"
+        if row["Product Title"] == "No":
+            continue
+        # Filter rows where "Is Top 24 Advertised" is "No" and has ranking
+        if row["Is Top 24 Advertised"] == "No" and (row["Sponsored Rank"] or row["Organic Rank"]):
+            # Convert "Reference ID" to a four-digit number
+            row["Reference ID"] = f'{int(row["Reference ID"]):04}'
+            writer.writerow(row)
